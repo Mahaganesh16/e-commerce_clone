@@ -1,402 +1,205 @@
-// 'use client';
-
-// import React, { useEffect, useState, use } from 'react';
-// import axios from 'axios';
-// import Header from '../../components/Header';
-
-// type SearchPageProps = {
-//   searchParams: Promise<{ category?: string }>;
-// };
-
-// export default function SearchPage({ searchParams }: SearchPageProps) {
-//   const params = use(searchParams);
-//   const category = params.category || 'all';
-//   const [products, setProducts] = useState<any[]>([]);
-//   const [loading, setLoading] = useState(true);
-
-//   useEffect(() => {
-//     loadProducts();
-//   }, [category]);
-
-//   const loadProducts = async () => {
-//     setLoading(true);
-//     try {
-//       const res = await axios.get('/api/products');
-//       let matched: any[] = [];
-      
-//       res.data.forEach((section: any) => {
-//         if (section.items) {
-//           section.items.forEach((item: any) => {
-//             const title = (item.title || "").toLowerCase();
-            
-//             // 🌟 STRICT FILTER: இங்க தான் நாம அந்த 'Bathroom Accessories' போன்ற குப்பையை பில்டர் பண்ணுறோம்
-//             const isFridge = category === 'refrigerator' && (title.includes('refrigerator') || title.includes('fridge'));
-//             const isAC = category === 'ac' && (title.includes('ac') || title.includes('air'));
-//             const isTrash = title.includes('bathroom') || title.includes('figurine') || title.includes('storage') || title.includes('lighting');
-
-//             if ((isFridge || isAC) && !isTrash) {
-//               matched.push(item);
-//             }
-//           });
-//         }
-//       });
-//       setProducts(matched);
-//     } catch (e) { console.error(e); }
-//     finally { setLoading(false); }
-//   };
-
-//   return (
-//     <div className="bg-white min-h-screen">
-//       <Header />
-//       <main className="max-w-[1400px] mx-auto p-4">
-//         <h1 className="text-xl font-bold mb-6 capitalize">{category} Results</h1>
-//         {loading ? <p>Loading...</p> : (
-//             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-//                 {products.map((p) => (
-//                     <div key={p.id} className="border border-gray-200 p-4 hover:shadow-lg transition-all rounded-sm flex flex-col items-center text-center">
-//                         <img src={p.image_url} alt={p.title} className="h-48 w-full object-contain mb-4" />
-//                         <h2 className="text-sm text-gray-800 line-clamp-3 mb-2 flex-grow">{p.title}</h2>
-//                         <div className="text-xl font-medium mt-auto mb-3">₹{p.price?.toLocaleString()}</div>
-//                         <button className="bg-[#FFD814] w-full py-2 rounded-full text-xs font-bold border border-orange-300 hover:bg-[#F7CA00]">Add to cart</button>
-//                     </div>
-//                 ))}
-//             </div>
-//         )}
-//       </main>
-//     </div>
-//   );
-// }
-
-
+// src/app/search/page.tsx
 'use client';
 
-import React, { useEffect, useState, use } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import axios from 'axios';
-import { useRouter } from 'next/navigation';
 import Header from '../../components/Header';
+import Footer from '../../components/Footer';
+import SearchProductCard from '../../components/SearchProductCard';
 
-type Product = {
-  id: number;
-  title: string;
-  image_url: string;
-  price?: number;
-  mrp?: number;
-  rating?: number;
-  review_count?: number;
-  section_id?: number;
-};
+function SearchResultsContent() {
+  const searchParams = useSearchParams();
+  const category = searchParams.get('category') || '';
+  const router = useRouter();
+  
+  const [products, setProducts] = useState<any[]>([]);
+  const [brands, setBrands] = useState<any[]>([]); // 🌟 Dynamic state for database brands
+  const [loading, setLoading] = useState(true);
 
-type SearchPageProps = {
-  searchParams: Promise<{ category?: string }>;
-};
+  useEffect(() => {
+    setLoading(true);
+    
+    // Concurrently fetch both products and brand logos from the database
+    Promise.all([
+      axios.get(`/api/products?category=${category}`).catch(() => ({ data: [] })),
+      axios.get('/api/brands').catch(() => ({ data: [] }))
+    ])
+    .then(([resProducts, resBrands]) => {
+      if (Array.isArray(resProducts.data)) setProducts(resProducts.data);
+      if (Array.isArray(resBrands.data)) setBrands(resBrands.data);
+      setLoading(false);
+    })
+    .catch((err) => {
+      console.error("Error fetching data:", err);
+      setLoading(false);
+    });
+  }, [category]);
 
-function StarRating({ rating }: { rating: number }) {
+  const handleCategoryChange = (newCategory: string) => {
+    router.push(`/search?category=${newCategory}`);
+  };
+
+  if (loading) {
+    return (
+      <div className="w-full p-6 text-left">
+        <p className="text-gray-600 animate-pulse text-base">Loading matching search results...</p>
+      </div>
+    );
+  }
+
+  const isCushionCategory = category.toLowerCase().includes('cushion') || category.toLowerCase().includes('furnishing');
+
   return (
-    <div className="flex items-center">
-      {[1,2,3,4,5].map((s) => (
-        <svg key={s} className={`w-3.5 h-3.5 ${rating >= s ? 'text-[#FFA41C]' : rating >= s - 0.5 ? 'text-[#FFA41C]' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-        </svg>
-      ))}
+    <div className="flex-grow max-w-[1500px] w-full mx-auto flex gap-8 select-none text-left">
+      
+      {/* 1. LEFT SIDEBAR COLUMN (Kept completely original without modifications) */}
+      <aside className="w-52 hidden md:block flex-shrink-0 text-left border-r border-gray-200 pr-4">
+        {isCushionCategory ? (
+          <div className="space-y-5 text-[13px]">
+            <div>
+              <h3 className="font-bold text-gray-900 mb-1 text-sm">Category</h3>
+              <ul className="space-y-1 text-gray-800">
+                <li className="font-medium cursor-pointer hover:text-orange-600">&lsaquo; Home & Kitchen</li>
+                <li className="font-semibold pl-2 text-gray-900">Home Furnishing</li>
+                <ul className="pl-4 space-y-1 text-gray-600 text-xs">
+                  <li className="hover:text-orange-600 cursor-pointer">Bathroom Linen</li>
+                  <li className="hover:text-orange-600 cursor-pointer">Bedding & Linen</li>
+                  <li className="hover:text-orange-600 cursor-pointer">Carpets & Rugs</li>
+                  <li className="hover:text-orange-600 cursor-pointer">Curtains & Accessories</li>
+                  <li className="text-orange-600 font-bold cursor-pointer">Cushions & Cushion Covers</li>
+                  <li className="hover:text-orange-600 cursor-pointer">Diwan Cover Sets</li>
+                  <li className="hover:text-orange-600 cursor-pointer">Fabric</li>
+                  <li className="hover:text-orange-600 cursor-pointer">Inflatable Beds, Pillows & Accessories</li>
+                  <li className="hover:text-orange-600 cursor-pointer">Kitchen Linens</li>
+                  <li className="hover:text-orange-600 cursor-pointer">Slipcovers</li>
+                </ul>
+              </ul>
+            </div>
+            <hr className="border-gray-200" />
+            <div>
+              <h3 className="font-bold text-gray-900 mb-1.5 text-sm">Amazon Prime</h3>
+              <label className="flex items-center gap-2 cursor-pointer font-medium text-gray-700 hover:text-orange-600">
+                <input type="checkbox" className="rounded-sm border-gray-300 accent-orange-500 w-3.5 h-3.5" defaultChecked />
+                <span className="text-[#007185] font-bold text-xs">✓prime</span>
+              </label>
+            </div>
+            <hr className="border-gray-200" />
+            <div>
+              <h3 className="font-bold text-gray-900 mb-2 text-sm">Delivery Day</h3>
+              <div className="space-y-2 text-xs font-medium text-gray-700">
+                <label className="flex items-center gap-2 cursor-pointer hover:text-orange-600">
+                  <input type="checkbox" className="rounded-sm border-gray-300 accent-orange-500 w-3.5 h-3.5" />
+                  <span>Get It Today</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer hover:text-orange-600">
+                  <input type="checkbox" className="rounded-sm border-gray-300 accent-orange-500 w-3.5 h-3.5" />
+                  <span>Get It by Tomorrow</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-[13px]">
+            <div className="mb-6">
+              <h3 className="text-sm font-bold text-gray-900 mb-2">Department</h3>
+              <ul className="space-y-1.5 text-xs text-gray-700">
+                <li onClick={() => handleCategoryChange('ac')} className="hover:text-orange-600 cursor-pointer transition-colors">&lsaquo; Air Conditioners</li>
+                <li onClick={() => handleCategoryChange('washing')} className="hover:text-orange-600 cursor-pointer transition-colors">&lsaquo; Washing Machines</li>
+                <li onClick={() => handleCategoryChange('refrigerator')} className="hover:text-orange-600 cursor-pointer transition-colors">&lsaquo; Refrigerators</li>
+              </ul>
+            </div>
+          </div>
+        )}
+      </aside>
+
+      {/* 2. RIGHT DISPLAY COLUMN (Refined to minimal raw display) */}
+      <div className="flex-grow">
+        {isCushionCategory ? (
+          <div className="w-full">
+            <h1 className="text-2xl font-extrabold text-[#E47911] font-sans mb-1 tracking-tight">
+              Buy Home Furnishing Products Online at Amazon India
+            </h1>
+            <p className="text-[13px] text-gray-600 leading-relaxed mb-6 border-b border-gray-100 pb-4">
+              Looking to purchase home furnishing products? Amazon India offers you a wide collection of <span className="text-[#007185] hover:underline cursor-pointer">bedroom, bathroom, and kitchen linen, bedding, carpets, cushions, curtains</span> and much more online.
+            </p>
+
+            {/* 🖼️ Seasonal Trends Minimal Grid Layout */}
+            <div className="w-full mb-8">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">
+                Trends of the season
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-6">
+                {products.map((item: any) => (
+                  <div key={item.id} className="flex flex-col items-center justify-between min-h-[220px] group cursor-pointer">
+                    {/* Raw Clean Image Viewer */}
+                    <div className="h-44 w-full flex items-center justify-center overflow-hidden bg-transparent">
+                      <img src={item.image_url} alt={item.title} className="max-h-full max-w-full object-contain pointer-events-none" />
+                    </div>
+                    {/* Action Text */}
+                    <div className="text-center mt-2">
+                      <span className="text-[13px] font-normal text-[#007185] group-hover:text-orange-600 group-hover:underline">
+                        Shop now
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <hr className="border-gray-200 my-6" />
+
+            {/* 🖼️ Best of Furnishing Brands Minimal Grid Layout */}
+            <div className="w-full mb-4">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">
+                Best of furnishing brands
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-4 gap-y-6">
+                {brands.map((brand: any) => (
+                  <div key={brand.id} className="flex flex-col items-center justify-between min-h-[160px] group cursor-pointer">
+                    {/* Raw Clean Brand Logo Image Viewer */}
+                    <div className="h-28 w-full flex items-center justify-center overflow-hidden bg-transparent">
+                      <img src={brand.image_url} alt={brand.name} className="max-h-full max-w-full object-contain pointer-events-none" />
+                    </div>
+                    {/* Action Text */}
+                    <div className="text-center mt-2">
+                      <span className="text-[13px] font-normal text-[#007185] group-hover:text-orange-600 group-hover:underline">
+                        Shop now
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </div>
+        ) : (
+          /* Default category template fallback layout */
+          <div className="w-full">
+            <h1 className="text-xl font-bold text-gray-900 mb-1">Results</h1>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {products.map((item: any) => (
+                <SearchProductCard key={item.id} id={item.id} title={item.title} image_url={item.image_url} price={item.price ? Number(item.price) : 0} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
     </div>
   );
 }
 
-export default function SearchPage({ searchParams }: SearchPageProps) {
-  const params = use(searchParams);
-  const category = params.category || 'all';
-  const router = useRouter();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [sortBy, setSortBy] = useState('featured');
-
-  useEffect(() => { loadProducts(); }, [category]);
-
-  const loadProducts = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.get('/api/products');
-      let matched: Product[] = [];
-
-      res.data.forEach((section: any) => {
-        if (section.items) {
-          section.items.forEach((item: any) => {
-            const title = (item.title || '').toLowerCase();
-            const isFridge = category === 'refrigerator' && (title.includes('refrigerator') || title.includes('fridge'));
-            const isAC = category === 'ac' && (title.includes('ac') || title.includes('air conditioner') || title.includes('split ac') || title.includes('inverter ac'));
-            const isWashing = category === 'washing' && (title.includes('washing') || title.includes('washer'));
-            const isMicrowave = category === 'microwave' && (title.includes('microwave') || title.includes('oven'));
-            const isAll = category === 'all';
-            const isTrash = title.includes('bathroom') || title.includes('figurine') || title.includes('lighting');
-
-            if ((isFridge || isAC || isWashing || isMicrowave || isAll) && !isTrash) {
-              matched.push(item);
-            }
-          });
-        }
-      });
-      setProducts(matched);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Generate deterministic fake data for missing fields
-  const getPrice = (p: Product) => {
-    if (p.price && p.price > 0) return p.price;
-    const prices = [7990, 34990, 64990, 62990, 83990, 45990, 28990, 52990];
-    return prices[p.id % prices.length];
-  };
-
-  const getMrp = (price: number) => Math.round(price * 1.25);
-  const getDiscount = (price: number, mrp: number) => Math.round(((mrp - price) / mrp) * 100);
-  const getRating = (p: Product) => {
-    if (p.rating && p.rating > 0) return p.rating;
-    const r = [4.1, 4.2, 4.3, 4.4, 4.5, 3.9, 4.0, 3.8];
-    return r[p.id % r.length];
-  };
-  const getReviews = (p: Product) => {
-    if (p.review_count && p.review_count > 0) return p.review_count;
-    const c = [1247, 3891, 581, 2104, 728, 4512, 1893, 347];
-    return c[p.id % c.length];
-  };
-
-  const sortedProducts = [...products].sort((a, b) => {
-    if (sortBy === 'price-low') return getPrice(a) - getPrice(b);
-    if (sortBy === 'price-high') return getPrice(b) - getPrice(a);
-    if (sortBy === 'rating') return getRating(b) - getRating(a);
-    return 0;
-  });
-
-  const categoryLabel: Record<string, string> = {
-    ac: 'Air Conditioners',
-    refrigerator: 'Refrigerators',
-    washing: 'Washing Machines',
-    microwave: 'Microwave Ovens',
-    all: 'All Products',
-  };
-
+export default function SearchPage() {
   return (
-    <div className="bg-[#EAEDED] min-h-screen">
+    <div className="bg-white min-h-screen text-black font-sans flex flex-col justify-between">
       <Header />
-
-      <div className="max-w-[1500px] mx-auto flex gap-4 p-4">
-
-        {/* LEFT SIDEBAR */}
-        <aside className="w-60 shrink-0 hidden lg:block">
-          <div className="bg-white p-4 rounded shadow-sm mb-3">
-            <h3 className="font-bold text-gray-900 text-base mb-3">Department</h3>
-            <ul className="text-sm space-y-1">
-              {Object.entries(categoryLabel).map(([key, label]) => (
-                <li key={key}>
-                  <button
-                    onClick={() => router.push(`/search?category=${key}`)}
-                    className={`text-left w-full hover:text-orange-600 ${category === key ? 'font-bold text-gray-900' : 'text-blue-700'}`}
-                  >
-                    {category === key && '‹ '}{label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="bg-white p-4 rounded shadow-sm mb-3">
-            <h3 className="font-bold text-gray-900 text-sm mb-2 border-b pb-1">Brands</h3>
-            <ul className="text-sm space-y-1.5 text-gray-700">
-              {['Samsung', 'LG', 'Voltas', 'Haier', 'Godrej', 'Daikin', 'Whirlpool'].map(b => (
-                <li key={b} className="flex items-center gap-2 cursor-pointer hover:text-orange-600">
-                  <input type="checkbox" className="accent-orange-500" /> {b}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="bg-white p-4 rounded shadow-sm mb-3">
-            <h3 className="font-bold text-gray-900 text-sm mb-2 border-b pb-1">Customer Reviews</h3>
-            {[4, 3, 2, 1].map(r => (
-              <div key={r} className="flex items-center gap-1 cursor-pointer hover:text-orange-600 mb-1">
-                <StarRating rating={r} />
-                <span className="text-sm text-blue-700 hover:text-orange-600">& Up</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="bg-white p-4 rounded shadow-sm">
-            <h3 className="font-bold text-gray-900 text-sm mb-2 border-b pb-1">Delivery</h3>
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input type="checkbox" className="accent-orange-500" />
-              <span>Free Delivery</span>
-            </label>
-          </div>
-        </aside>
-
-        {/* MAIN CONTENT */}
-        <main className="flex-1">
-          {/* Top bar */}
-          <div className="bg-white px-4 py-2.5 rounded shadow-sm mb-3 flex items-center justify-between">
-            <div className="text-sm text-gray-600">
-              {loading ? 'Loading...' : (
-                <>
-                  <span className="text-gray-500">1-{sortedProducts.length} of </span>
-                  <span className="font-medium">{sortedProducts.length} results</span>
-                  {' '}for{' '}
-                  <span className="font-bold text-gray-900">"{categoryLabel[category] || category}"</span>
-                </>
-              )}
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-gray-600">Sort by:</span>
-              <select
-                value={sortBy}
-                onChange={e => setSortBy(e.target.value)}
-                className="border border-gray-300 rounded px-2 py-1 text-sm bg-white focus:outline-none"
-              >
-                <option value="featured">Featured</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="rating">Avg. Customer Review</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Product list */}
-          {loading ? (
-            <div className="space-y-3">
-              {[1,2,3,4].map(i => (
-                <div key={i} className="bg-white rounded shadow-sm p-4 flex gap-4 animate-pulse">
-                  <div className="w-48 h-48 bg-gray-200 rounded shrink-0" />
-                  <div className="flex-1 space-y-3 pt-2">
-                    <div className="h-5 bg-gray-200 rounded w-3/4" />
-                    <div className="h-4 bg-gray-200 rounded w-1/4" />
-                    <div className="h-6 bg-gray-200 rounded w-1/3" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : sortedProducts.length === 0 ? (
-            <div className="bg-white rounded shadow-sm p-10 text-center">
-              <p className="text-xl font-medium text-gray-700">No results for "{category}"</p>
-              <p className="text-sm text-gray-500 mt-2">Try a different category from the sidebar.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {sortedProducts.map((p) => {
-                const price = getPrice(p);
-                const mrp = getMrp(price);
-                const discount = getDiscount(price, mrp);
-                const rating = getRating(p);
-                const reviews = getReviews(p);
-
-                return (
-                  <div
-                    key={p.id ?? Math.random()}
-                    onClick={() => p.id && router.push(`/product/${p.id}`)}
-                    className="bg-white rounded shadow-sm hover:shadow-md transition-shadow cursor-pointer flex gap-5 p-4 group"
-                  >
-                    {/* Image */}
-                    <div className="w-48 h-48 shrink-0 flex items-center justify-center bg-white border border-gray-100 rounded overflow-hidden">
-                      <img
-                        src={p.image_url}
-                        alt={p.title}
-                        className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-200"
-                        onError={(e) => { (e.target as HTMLImageElement).src = '/ac/ac1.webp'; }}
-                      />
-                    </div>
-
-                    {/* Details */}
-                    <div className="flex-1 py-1">
-                      <h2 className="text-[#0F1111] text-base font-medium group-hover:text-[#C7511F] line-clamp-2 mb-1">
-                        {p.title}
-                      </h2>
-
-                      {/* Rating */}
-                      <div className="flex items-center gap-2 mb-2">
-                        <StarRating rating={rating} />
-                        <span className="text-sm text-[#007185] hover:text-orange-600">
-                          {rating.toFixed(1)}
-                        </span>
-                        <span className="text-sm text-[#007185] hover:text-orange-600">
-                          {reviews.toLocaleString()} ratings
-                        </span>
-                      </div>
-
-                      {/* Price */}
-                      <div className="flex items-baseline gap-2 mb-1">
-                        <span className="text-sm text-red-600 font-medium">-{discount}%</span>
-                        <span className="text-2xl font-medium text-[#0F1111]">
-                          <span className="text-sm align-top">₹</span>
-                          {price.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="text-sm text-gray-500 mb-2">
-                        M.R.P.:{' '}
-                        <span className="line-through">₹{mrp.toLocaleString()}</span>
-                      </div>
-
-                      {/* Badges */}
-                      <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <span className="text-xs bg-red-600 text-white px-1.5 py-0.5 rounded font-medium">Limited time deal</span>
-                        <span className="text-xs text-green-700 font-medium">FREE Delivery</span>
-                        <span className="text-xs text-gray-600">200+ bought in past month</span>
-                      </div>
-
-                      {/* Delivery */}
-                      <div className="text-sm text-gray-700 mb-3">
-                        Get it by{' '}
-                        <span className="font-semibold">
-                          {new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })}
-                        </span>
-                        {' '}if ordered in next{' '}
-                        <span className="text-green-700 font-medium">12 hrs</span>
-                      </div>
-
-                      {/* Buttons */}
-                      <div className="flex gap-2">
-                        <button
-                          onClick={e => { e.stopPropagation(); }}
-                          className="bg-[#FFD814] hover:bg-[#F7CA00] border border-[#FCD200] text-[#0F1111] text-sm font-medium px-5 py-1.5 rounded-full transition-colors"
-                        >
-                          Add to cart
-                        </button>
-                        <button
-                          onClick={e => { e.stopPropagation(); }}
-                          className="bg-[#FF9900] hover:bg-[#FA8900] border border-[#e88a00] text-white text-sm font-medium px-5 py-1.5 rounded-full transition-colors"
-                        >
-                          Buy now
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Right side price box (Amazon style) */}
-                    <div className="w-52 shrink-0 border border-gray-200 rounded p-3 text-sm space-y-1 self-start hidden xl:block">
-                      <div className="text-xl font-medium">₹{price.toLocaleString()}</div>
-                      <div className="text-green-700 font-medium text-xs">FREE Delivery</div>
-                      <div className="text-xs text-gray-600">
-                        Deliver to Madurai - 625009
-                      </div>
-                      <div className="text-green-700 font-semibold text-sm">In Stock</div>
-                      <button
-                        onClick={e => { e.stopPropagation(); }}
-                        className="w-full bg-[#FFD814] hover:bg-[#F7CA00] text-xs font-bold py-1.5 rounded-full mt-1 border border-[#FCD200]"
-                      >
-                        Add to cart
-                      </button>
-                      <button
-                        onClick={e => { e.stopPropagation(); }}
-                        className="w-full bg-[#FF9900] hover:bg-[#FA8900] text-white text-xs font-bold py-1.5 rounded-full border border-[#e88a00]"
-                      >
-                        Buy now
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </main>
+      <div className="flex-grow max-w-[1500px] w-full mx-auto px-4 py-4 flex flex-col justify-between" suppressHydrationWarning>
+        <Suspense fallback={<div className="w-full p-6 text-left"><p className="text-gray-600 animate-pulse">Loading search results track...</p></div>}>
+          <SearchResultsContent />
+        </Suspense>
       </div>
+      <Footer />
     </div>
   );
 }

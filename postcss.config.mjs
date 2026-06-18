@@ -1,7 +1,9 @@
-const config = {
+// postcss.config.mjs
+const postcssConfig = {
   plugins: {
-    "@tailwindcss/postcss": {},
+    // 🌟 Optimized configuration for Tailwind v4 engine pipeline
+    '@tailwindcss/postcss': {},
   },
 };
 
-export default config;
+export default postcssConfig;

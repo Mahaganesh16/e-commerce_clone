@@ -9,66 +9,86 @@ type SubItem = {
   image_url: string;
 };
 
-type Props = {
+type ProductCardProps = {
   title: string;
-  items?: SubItem[] | null;       
-  single_image?: string | null;    
-  link_text: string;        
+  items: SubItem[] | null;
+  single_image?: string;
+  link_text: string;
 };
 
-export default function ProductCard({ title, items, single_image, link_text }: Props) {
+export default function ProductCard({ title, items, single_image, link_text }: ProductCardProps) {
   const router = useRouter();
-  const isAppliancesCard = title.toLowerCase().includes('appliances');
+
+  // Dynamic routing logic based on clicked card headers or grid tiles
+  const handleNavigation = (searchText: string) => {
+    const term = searchText.toLowerCase().trim();
+    
+    // Explicit clean mapping parameters checks
+    if (term.includes('washing') || term.includes('washer')) {
+      router.push('/search?category=washing');
+    } else if (term.includes('air') || term === 'ac' || term.includes('conditioner')) {
+      router.push('/search?category=ac');
+    } else if (term.includes('refrigerator') || term.includes('fridge')) {
+      router.push('/search?category=refrigerator');
+    } else if (term.includes('microwave') || term.includes('oven')) {
+      router.push('/search?category=microwave');
+    } else if (term.includes('cushion') || term.includes('furnishing')) {
+      // 🌟 FORCE ROUTING CAPTURE: Match clean query interceptor for the trend UI
+      router.push('/search?category=cushion');
+    } else {
+      router.push(`/search?category=${encodeURIComponent(term)}`);
+    }
+  };
 
   return (
-    <div className="bg-white p-5 z-30 flex flex-col justify-between shadow-sm rounded-none min-h-[420px] text-left select-none">
-      <h2 className="text-xl font-bold text-gray-900 mb-3">{title}</h2>
-      
+    <div className="bg-white p-5 flex flex-col justify-between h-[420px] rounded-none shadow-xs border border-gray-100 text-left">
+      <h2 className="text-[19px] font-bold text-gray-900 line-clamp-2 leading-tight">
+        {title}
+      </h2>
+
+      {/* CASE 1: Multi-Item 4x4 Grid Layout */}
       {items && items.length > 0 ? (
-        <div className="grid grid-cols-2 gap-x-4 gap-y-3 flex-grow items-center">
-          {items.map((item, idx) => {
-            // 🌟 இப்போ டேட்டாபேஸ்ல இருந்து வர்ற image_url-ஐயே டைரக்டா எடுக்குறோம்
-            const finalImageUrl = item.image_url; 
-            const itemTitleClean = (item.title || "").toLowerCase();
-
-            // கேட்டகிரி டிடெக்ஷன்
-            let category = 'search';
-            if (itemTitleClean.includes('air') || itemTitleClean.includes('ac')) category = 'ac';
-            else if (itemTitleClean.includes('refrigerator') || itemTitleClean.includes('fridge')) category = 'refrigerator';
-            else if (itemTitleClean.includes('microwave') || itemTitleClean.includes('oven')) category = 'microwave';
-            else if (itemTitleClean.includes('washing') || itemTitleClean.includes('machine')) category = 'washing';
-
-            return (
-              <div 
-                key={idx} 
-                onClick={() => router.push(`/search?category=${category}`)}
-                className="text-left cursor-pointer group"
-              >
-                <div className="bg-gray-100 h-28 flex items-center justify-center overflow-hidden p-2 rounded-sm">
-                  <img 
-                    src={finalImageUrl} 
-                    alt={item.title}
-                    onError={(e) => { e.currentTarget.src = "/ac/ac1.webp"; }} // ஃபால்பேக் இமேஜ்
-                    className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-200"
-                  />
-                </div>
-                <p className="text-xs text-gray-700 mt-1 font-medium truncate group-hover:text-orange-600">
-                  {item.title}
-                </p>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2 my-3 flex-grow justify-center items-center">
+          {items.slice(0, 4).map((item, idx) => (
+            <div 
+              key={idx} 
+              onClick={() => handleNavigation(item.title)}
+              className="cursor-pointer group flex flex-col justify-between h-[135px]"
+            >
+              <div className="bg-gray-50 w-full h-[105px] flex items-center justify-center overflow-hidden p-2 border border-gray-50 group-hover:border-gray-200 transition-colors">
+                <img 
+                  src={item.image_url} 
+                  alt={item.title} 
+                  className="max-h-full max-w-full object-contain transform group-hover:scale-105 transition-transform duration-200"
+                />
               </div>
-            );
-          })}
+              <span className="text-[11px] font-normal text-gray-700 line-clamp-1 mt-1 group-hover:text-orange-600">
+                {item.title}
+              </span>
+            </div>
+          ))}
         </div>
       ) : (
-        <div className="flex-grow bg-gray-50 animate-pulse rounded-sm" />
+        /* CASE 2: Single Full-Image Card Layout Banner */
+        <div 
+          onClick={() => handleNavigation(title)}
+          className="cursor-pointer my-3 flex-grow flex items-center justify-center overflow-hidden h-[280px] bg-white group"
+        >
+          <img 
+            src={single_image || '/placeholder.webp'} 
+            alt={title} 
+            className="max-h-full max-w-full object-contain transform group-hover:scale-102 transition-transform duration-200"
+          />
+        </div>
       )}
 
-      <div 
-        onClick={() => router.push('/search?category=refrigerator')}
-        className="text-xs text-teal-700 font-semibold hover:text-orange-700 hover:underline mt-4 block cursor-pointer"
+      {/* Footer link handling trigger option button text */}
+      <button 
+        onClick={() => handleNavigation(title)}
+        className="text-[#007185] hover:text-orange-600 hover:underline text-[13px] font-medium block text-left bg-transparent border-none outline-none cursor-pointer pt-2"
       >
         {link_text}
-      </div>
+      </button>
     </div>
   );
 }
