@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic'; // Ensures Next.js breaks the cache on every refresh
 
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/lib/db'; 
+import db from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
               OR LOWER(title) LIKE '%washer%'`
         );
         rows = results;
-      } 
+      }
       // 2. STRICT REFRIGERATOR ROUTE
       else if (cleanCategory.includes('refrigerator') || cleanCategory.includes('fridge')) {
         const [results]: any = await db.query(
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
               OR LOWER(title) LIKE '% ac')`
         );
         rows = results;
-      } 
+      }
       // 4. GENERAL FALLBACK ROUTE (For Microwaves, Cosmetics, Fashion, etc.)
       else {
         const [results]: any = await db.query(

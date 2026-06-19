@@ -168,7 +168,7 @@ export default function ProductPage({ params }: Props) {
                       selectedImage === thumb
                         ? 'border-orange-500 shadow-xs'
                         : 'border-gray-200 hover:border-gray-400'
-                    }`}
+                      }`}
                   >
                     <img src={thumb} alt="" className="w-full h-full object-contain" />
                   </div>
@@ -188,11 +188,10 @@ export default function ProductPage({ params }: Props) {
               <div className="flex gap-3 mt-4">
                 <button
                   onClick={handleAddToCart}
-                  className={`flex-1 py-2 rounded-full text-sm font-bold border transition-all cursor-pointer shadow-xs ${
-                    addedToCart
-                      ? 'bg-green-500 text-white border-green-500'
-                      : 'bg-[#FFD814] border-[#FCD200] hover:bg-[#F7CA00] text-black'
-                  }`}
+                  className={`flex-1 py-2 rounded-full text-sm font-bold border transition-all cursor-pointer shadow-xs ${addedToCart
+                    ? 'bg-green-500 text-white border-green-500'
+                    : 'bg-[#FFD814] border-[#FCD200] hover:bg-[#F7CA00] text-black'
+                    }`}
                 >
                   {addedToCart ? '✓ Added!' : 'Add to Cart'}
                 </button>
@@ -334,11 +333,10 @@ export default function ProductPage({ params }: Props) {
                 {/* Direct Action Buy triggers component configurations */}
                 <button
                   onClick={handleAddToCart}
-                  className={`w-full py-2 rounded-full text-sm font-bold transition-all cursor-pointer border shadow-sm ${
-                    addedToCart
-                      ? 'bg-green-500 text-white border-green-500'
-                      : 'bg-[#FFD814] border-[#FCD200] hover:bg-[#F7CA00] text-black'
-                  }`}
+                  className={`w-full py-2 rounded-full text-sm font-bold transition-all cursor-pointer border shadow-sm ${addedToCart
+                    ? 'bg-green-500 text-white border-green-500'
+                    : 'bg-[#FFD814] border-[#FCD200] hover:bg-[#F7CA00] text-black'
+                    }`}
                 >
                   {addedToCart ? '✓ Added to Cart' : 'Add to Cart'}
                 </button>

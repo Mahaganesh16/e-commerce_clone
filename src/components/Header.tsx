@@ -46,7 +46,7 @@ export default function Header() {
     <header className="sticky top-0 z-50 w-full select-none text-black">
       {/* Top Navigation Row */}
       <div className="bg-[#131921] text-white flex items-center p-2 pl-4 pr-4 gap-3 h-14 relative">
-        
+
         {/* 1. Amazon Logo Wrapper */}
         <div className="flex items-center border border-transparent hover:border-white p-1 pr-2 cursor-pointer h-[45px]">
           <span className="text-xl font-bold tracking-tight text-white flex items-center">
@@ -70,15 +70,15 @@ export default function Header() {
           <div className="bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs px-3 h-full flex items-center rounded-l-md border-r border-gray-300 font-normal">
             All <span className="ml-1 text-[10px]">▼</span>
           </div>
-          
+
           {/* 🌟 FIXED HYDRATION WARNING PATCH INJECTED HERE */}
-          <input 
-            type="text" 
-            placeholder="Search Amazon.in" 
-            suppressHydrationWarning={true} 
+          <input
+            type="text"
+            placeholder="Search Amazon.in"
+            suppressHydrationWarning={true}
             className="h-full p-2 px-3 flex-grow focus:outline-none text-black text-sm font-normal bg-white"
           />
-          
+
           <div className="p-2.5 bg-[#febd69] hover:bg-[#f3a847] h-full w-12 flex items-center justify-center rounded-r-md">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 text-gray-800">
               <path fillRule="evenodd" d="M10.5 3.75a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM2.25 10.5a8.25 8.25 0 1114.59 5.28l4.69 4.69a.75.75 0 11-1.06 1.06l-4.69-4.69A8.25 8.25 0 012.25 10.5z" clipRule="evenodd" />
@@ -87,7 +87,7 @@ export default function Header() {
         </div>
 
         {/* 4. Language Selector */}
-        <div 
+        <div
           onMouseEnter={() => setShowLangDropdown(true)}
           onMouseLeave={() => setShowLangDropdown(false)}
           className="flex items-center border border-transparent hover:border-white p-2 cursor-pointer h-[45px] gap-1 font-bold text-sm relative group"
@@ -103,9 +103,9 @@ export default function Header() {
               <div className="flex flex-col gap-2.5 border-b border-gray-100 pb-3 mb-3">
                 {languages.map((lang) => (
                   <label key={lang.code} className="flex items-center gap-2 text-xs text-gray-800 hover:text-orange-600 hover:underline cursor-pointer">
-                    <input 
-                      type="radio" 
-                      name="language" 
+                    <input
+                      type="radio"
+                      name="language"
                       checked={selectedLang === lang.code}
                       onChange={() => setSelectedLang(lang.code)}
                       className="accent-orange-500 cursor-pointer w-3.5 h-3.5"
@@ -124,7 +124,7 @@ export default function Header() {
         </div>
 
         {/* 5. Account & Lists Block */}
-        <div 
+        <div
           onMouseEnter={() => setShowAccountDropdown(true)}
           onMouseLeave={() => setShowAccountDropdown(false)}
           onClick={() => !isLoggedIn && (window.location.href = '/login')}
@@ -141,7 +141,7 @@ export default function Header() {
 
               {!isLoggedIn ? (
                 <div className="flex flex-col items-center pb-4 border-b border-gray-100 w-full mb-4">
-                  <button 
+                  <button
                     onClick={() => window.location.href = '/login'}
                     className="w-[220px] bg-gradient-to-b from-[#f7dfa5] to-[#f0c14b] border border-gray-400 hover:from-[#f5d78e] hover:to-[#eeb933] py-2 rounded text-sm font-medium text-black text-center shadow-sm cursor-pointer"
                   >
@@ -219,7 +219,7 @@ export default function Header() {
 
       {/* Bottom Sub-Navigation Menu Ribbon */}
       <div className="bg-[#232f3e] text-white flex items-center p-1.5 pl-4 gap-3 text-sm font-medium overflow-x-auto whitespace-nowrap scrollbar-none h-10">
-        <div 
+        <div
           onClick={() => setIsSidebarOpen(true)}
           className="flex items-center gap-1 border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer font-bold"
         >
@@ -251,7 +251,7 @@ export default function Header() {
       {/* Sidebar Menu Component */}
       {isSidebarOpen && (
         <div className="fixed inset-0 z-50 flex font-sans">
-          <div 
+          <div
             onClick={() => setIsSidebarOpen(false)}
             className="fixed inset-0 bg-black/60 transition-opacity duration-300"
           ></div>
@@ -332,7 +332,7 @@ export default function Header() {
             </div>
           </div>
 
-          <button 
+          <button
             onClick={() => setIsSidebarOpen(false)}
             className="absolute top-3 left-[375px] z-50 text-white font-light hover:text-gray-200 focus:outline-none cursor-pointer"
           >
