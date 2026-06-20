@@ -13,10 +13,13 @@ const pool = mysql.createPool({
 
 export async function GET() {
   try {
-    const [rows] = await pool.execute('SELECT * FROM home_lighting');
-    return NextResponse.json(Array.isArray(rows) ? rows : []);
+    const [rows] = await pool.execute('SELECT * FROM home_storage');
+    // The frontend expects { products: [...] } or an array?
+    // Let's return both just in case, or just match what the frontend expects:
+    // "if (res.data?.products) setStorageItems(res.data.products);"
+    return NextResponse.json({ products: Array.isArray(rows) ? rows : [] });
   } catch (error: any) {
-    console.error("Lighting API Error:", error.message);
+    console.error("Storage API Error:", error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

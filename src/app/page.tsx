@@ -6,7 +6,7 @@ import axios from 'axios';
 import Header from '../components/Header';
 import HeroBanner from '../components/HeroBanner';
 import ProductCard from '../components/ProductCard';
-import ProductCarousel from '../components/ProductCarousel'; 
+import ProductCarousel from '../components/ProductCarousel';
 import Footer from '../components/Footer';
 
 export default function HomePage() {
@@ -19,7 +19,7 @@ export default function HomePage() {
         const dbProducts = response.data;
 
         if (Array.isArray(dbProducts) && dbProducts.length > 0) {
-          
+
           // 🌟 FIXED SCANNER: Uses strict word boundaries so appliance keywords never match cushion covers
           const findProductImg = (keywords: string[], defaultFallback: string) => {
             const match = dbProducts.find((p: any) => {
@@ -32,7 +32,7 @@ export default function HomePage() {
                   const regex = new RegExp(`\\b${k}\\b`);
                   return regex.test(titleLower) || regex.test(urlLower);
                 }
-                
+
                 // General exclusions to prevent appliance keywords from matching layout categories
                 if (k === 'refrigerator' || k === 'fridge') {
                   return titleLower.includes(k) && !titleLower.includes('cushion');
@@ -47,14 +47,14 @@ export default function HomePage() {
           const finalAmazonLayout = [
             // ==================== ROW 1 ====================
             {
-              id: 4, 
+              id: 4,
               title: "Up to 75% off | Deals on headphones",
               link_text: "See choices",
               items: null,
               single_image: findProductImg(['headphone', 'earphone'], 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e')
             },
             {
-              id: 1, 
+              id: 1,
               title: "Appliances for your home | Up to 55% off",
               link_text: "See more",
               items: [
@@ -65,7 +65,7 @@ export default function HomePage() {
               ]
             },
             {
-              id: 2, 
+              id: 2,
               title: "Revamp your home in style",
               link_text: "Explore all",
               items: [
@@ -76,7 +76,7 @@ export default function HomePage() {
               ]
             },
             {
-              id: 3, 
+              id: 3,
               title: "Starting ₹49 | Deals on home essentials",
               link_text: "Explore all",
               items: [
@@ -145,7 +145,7 @@ export default function HomePage() {
   return (
     <div className="bg-gray-100 min-h-screen text-black font-sans flex flex-col justify-between">
       <Header />
-      
+
       <main className="max-w-[1500px] mx-auto pb-10 flex-grow w-full">
         <HeroBanner />
 
@@ -157,11 +157,11 @@ export default function HomePage() {
           </div>
         ) : (
           <div className={layoutSpacingClasses}>
-            
+
             {/* 1. TOP CARDS ROW GRID (Slice first 4 elements) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {cardsData.slice(0, 4).map((card: any) => (
-                <ProductCard 
+                <ProductCard
                   key={card.id}
                   title={card.title}
                   items={card.items}
@@ -172,7 +172,7 @@ export default function HomePage() {
             </div>
 
             {/* 2. MID-PAGE HORIZONTAL PRODUCT SCROLL SLIDER CAROUSEL */}
-            <ProductCarousel 
+            <ProductCarousel
               title="Up to 45% off | Electronics & accessories"
               link_text="See all offers"
               items={[
@@ -187,7 +187,7 @@ export default function HomePage() {
             {/* 3. BOTTOM CARDS ROW GRID (Slice remaining 4 elements) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 pt-2">
               {cardsData.slice(4, 8).map((card: any) => (
-                <ProductCard 
+                <ProductCard
                   key={card.id}
                   title={card.title}
                   items={card.items}

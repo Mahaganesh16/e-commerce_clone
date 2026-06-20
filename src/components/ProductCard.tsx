@@ -22,7 +22,7 @@ export default function ProductCard({ title, items, single_image, link_text }: P
   // Dynamic routing logic based on clicked card headers or grid tiles
   const handleNavigation = (searchText: string) => {
     const term = searchText.toLowerCase().trim();
-    
+
     // Explicit clean mapping parameters checks
     if (term.includes('washing') || term.includes('washer')) {
       router.push('/search?category=washing');
@@ -50,15 +50,15 @@ export default function ProductCard({ title, items, single_image, link_text }: P
       {items && items.length > 0 ? (
         <div className="grid grid-cols-2 gap-x-3 gap-y-2 my-3 flex-grow justify-center items-center">
           {items.slice(0, 4).map((item, idx) => (
-            <div 
-              key={idx} 
+            <div
+              key={idx}
               onClick={() => handleNavigation(item.title)}
               className="cursor-pointer group flex flex-col justify-between h-[135px]"
             >
               <div className="bg-gray-50 w-full h-[105px] flex items-center justify-center overflow-hidden p-2 border border-gray-50 group-hover:border-gray-200 transition-colors">
-                <img 
-                  src={item.image_url} 
-                  alt={item.title} 
+                <img
+                  src={item.image_url}
+                  alt={item.title}
                   className="max-h-full max-w-full object-contain transform group-hover:scale-105 transition-transform duration-200"
                 />
               </div>
@@ -70,20 +70,20 @@ export default function ProductCard({ title, items, single_image, link_text }: P
         </div>
       ) : (
         /* CASE 2: Single Full-Image Card Layout Banner */
-        <div 
+        <div
           onClick={() => handleNavigation(title)}
           className="cursor-pointer my-3 flex-grow flex items-center justify-center overflow-hidden h-[280px] bg-white group"
         >
-          <img 
-            src={single_image || '/placeholder.webp'} 
-            alt={title} 
+          <img
+            src={single_image || '/placeholder.webp'}
+            alt={title}
             className="max-h-full max-w-full object-contain transform group-hover:scale-102 transition-transform duration-200"
           />
         </div>
       )}
 
       {/* Footer link handling trigger option button text */}
-      <button 
+      <button
         onClick={() => handleNavigation(title)}
         className="text-[#007185] hover:text-orange-600 hover:underline text-[13px] font-medium block text-left bg-transparent border-none outline-none cursor-pointer pt-2"
       >

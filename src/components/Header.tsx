@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 export default function Header() {
   const [userName, setUserName] = useState('sign in');
@@ -10,6 +11,7 @@ export default function Header() {
   const [showLangDropdown, setShowLangDropdown] = useState(false);
   const [selectedLang, setSelectedLang] = useState('EN');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('amazon_user');
@@ -24,6 +26,22 @@ export default function Header() {
         console.error("Error parsing user data from localStorage", e);
       }
     }
+  }, []);
+
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      try {
+        const res = await axios.get('/api/cart');
+        const count = res.data.reduce((acc: number, item: any) => acc + item.quantity, 0);
+        setCartCount(count);
+      } catch (err) {
+        console.error("Error fetching cart count:", err);
+      }
+    };
+    fetchCartCount();
+
+    window.addEventListener('cart_updated', fetchCartCount);
+    return () => window.removeEventListener('cart_updated', fetchCartCount);
   }, []);
 
   const handleSignOut = () => {
@@ -48,11 +66,13 @@ export default function Header() {
       <div className="bg-[#131921] text-white flex items-center p-2 pl-4 pr-4 gap-3 h-14 relative">
 
         {/* 1. Amazon Logo Wrapper */}
-        <div className="flex items-center border border-transparent hover:border-white p-1 pr-2 cursor-pointer h-[45px]">
-          <span className="text-xl font-bold tracking-tight text-white flex items-center">
-            amazon<span className="text-[#febd69] text-sm mt-2 font-medium">.in</span>
-          </span>
-        </div>
+        <a href="/">
+          <div className="flex items-center border border-transparent hover:border-white p-1 pr-2 cursor-pointer h-[45px]">
+            <span className="text-xl font-bold tracking-tight text-white flex items-center">
+              amazon<span className="text-[#febd69] text-sm mt-2 font-medium">.in</span>
+            </span>
+          </div>
+        </a>
 
         {/* 2. Madurai Delivery Geo Location Tracker */}
         <div className="flex items-center border border-transparent hover:border-white p-1 cursor-pointer h-[45px] gap-1 pl-2 pr-2">
@@ -202,10 +222,10 @@ export default function Header() {
         </div>
 
         {/* 7. Shopping Cart */}
-        <div className="flex items-center border border-transparent hover:border-white p-1 pl-2 pr-2 cursor-pointer h-[45px] relative gap-1">
+        <div onClick={() => window.location.href = '/cart'} className="flex items-center border border-transparent hover:border-white p-1 pl-2 pr-2 cursor-pointer h-[45px] relative gap-1">
           <div className="relative flex items-center">
             <span className="absolute -top-1.5 left-[13px] bg-[#131921] text-[#f08804] text-base font-bold px-1 rounded-full leading-none">
-              0
+              {cartCount}
             </span>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-7 w-7 text-white">
               <path d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.674-.421l2.83-5.661a.75.75 0 00-.674-1.079H5.16l-.152-.567a.75.75 0 00-.733-.583H2.25z" />

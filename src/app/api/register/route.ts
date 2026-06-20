@@ -1,18 +1,30 @@
-import { db } from "@/lib/db";
-import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
+import { NextResponse } from 'next/server';
+import db from '@/lib/db';
 
-export async function POST(req: Request) {
-  const { name, email, password } = await req.json();
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const { name, email, password } = body;
 
-  const hash = await bcrypt.hash(password, 10);
+    if (!name || !email || !password) {
+      return NextResponse.json({ message: 'Missing parameters' }, { status: 400 });
+    }
 
-  await db.query(
-    "INSERT INTO users(name,email,password) VALUES(?,?,?)",
-    [name, email, hash]
-  );
+    // Check if email already exists
+    const [existing]: any = await db.query('SELECT id FROM users WHERE email = ?', [email]);
+    if (existing.length > 0) {
+      return NextResponse.json({ message: 'Email already exists' }, { status: 409 });
+    }
 
-  return NextResponse.json({
-    success: true,
-  });
+    // Insert new user
+    const [result]: any = await db.query(
+      'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
+      [name, email, password]
+    );
+
+    return NextResponse.json({ success: true, id: result.insertId, name });
+  } catch (error: any) {
+    console.error("Register Error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }

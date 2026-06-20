@@ -1,133 +1,13 @@
-"use client";
+const fs = require('fs');
+const path = require('path');
 
-import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState, useRef, Suspense } from "react";
-import SearchProductCard from "../../components/SearchProductCard";
-import Header from "../../components/Header";
-import Footer from "../../components/Footer";
-import axios from "axios";
+const filePath = path.join(__dirname, 'src', 'app', 'search', 'page.tsx');
 
-function SearchResultsContent() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const category = searchParams.get('category') || '';
-  
-  const [products, setProducts] = useState<any[]>([]);
-  const [cartItems, setCartItems] = useState<any[]>([]);
-  const [storageItems, setStorageItems] = useState<any[]>([]);
-  const [decorCategories, setDecorCategories] = useState<any[]>([]);
-  const [furnishingTrends, setFurnishingTrends] = useState<any[]>([]);
-  const [furnishingBrands, setFurnishingBrands] = useState<any[]>([]);
-  const [lightingBrands, setLightingBrands] = useState<any[]>([]);
+let original = fs.readFileSync(filePath, 'utf8');
+const topPart = original.substring(0, original.indexOf('  return (\n    <div className="flex-grow max-w-[1500px]'));
+const bottomPart = original.substring(original.indexOf('export default function SearchPage() {'));
 
-  const productSliderRef = useRef<HTMLDivElement>(null);
-  const decorSliderRef = useRef<HTMLDivElement>(null);
-  const lightingSliderRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    axios.get(`/api/products${category ? `?category=${category}` : ''}`)
-      .then(res => setProducts(res.data))
-      .catch(console.error);
-
-    axios.get('/api/cart')
-      .then(res => setCartItems(res.data))
-      .catch(console.error);
-
-    axios.get('/api/home-storage').then(res => {
-      if (res.data?.products) setStorageItems(res.data.products);
-    }).catch(console.error);
-
-    axios.get('/api/home-decor').then(res => {
-      if (Array.isArray(res.data)) setDecorCategories(res.data);
-    }).catch(console.error);
-
-    axios.get('/api/home-lighting').then(res => {
-      if (Array.isArray(res.data)) setLightingBrands(res.data);
-    }).catch(console.error);
-
-    axios.get('/api/home-furnishing').then(res => {
-      if (res.data?.trends) setFurnishingTrends(res.data.trends);
-      if (res.data?.brands) setFurnishingBrands(res.data.brands);
-    }).catch(console.error);
-  }, [category]);
-
-  const scrollSlider = (ref: React.RefObject<HTMLDivElement | null>, direction: 'left' | 'right') => {
-    if (ref.current) {
-      const scrollAmount = 400; 
-      ref.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
-      });
-    }
-  };
-
-  const handleCategoryChange = (newCategory: string) => {
-    router.push(`/search?category=${encodeURIComponent(newCategory)}`);
-  };
-
-  const totalCartItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-  const cartSubtotal = cartItems.reduce((acc, item) => acc + Number(item.price) * item.quantity, 0);
-
-  const categoryLower = category.toLowerCase();
-  
-  const isStorageCategory = 
-    categoryLower.includes('storage') || 
-    categoryLower.includes('fresh') ||
-    categoryLower.includes('jd');
-
-  const isFurnishingCategory = 
-    categoryLower.includes('cushion') ||
-    categoryLower.includes('furnishing') ||
-    categoryLower.includes('linen') ||
-    categoryLower.includes('bedding');
-
-  const isLightingCategory = categoryLower.includes('lighting') || categoryLower.includes('light');
-
-  const isDecorCategory = 
-    categoryLower.includes('decor') || 
-    categoryLower.includes('clock') || 
-    categoryLower.includes('sticker') ||
-    categoryLower.includes('vase') ||
-    categoryLower.includes('figuring') ||
-    categoryLower.includes('showpiece') ||
-    categoryLower.includes('art');
-
-  const realDetailsMock = [
-    { title: "JD FRESH 5 Tier Foldable Shelf", stars: "3.7", rating: "69", price: "2,099.00", oldPrice: "4,000", off: "48% off" },
-    { title: "JD FRESH 5-Tier Extra Large Storage Racks", stars: "4.3", rating: "29", price: "2,099.00", oldPrice: "4,500", off: "53% off" },
-    { title: "JD FRESH Dish Drying Rack", stars: "4.5", rating: "2", price: "1,899.00", oldPrice: "3,000", off: "37% off" },
-    { title: "JD FRESH 3 Tier Plastic Corner Storage", stars: "3.5", rating: "389", price: "449.00", oldPrice: "999", off: "55% off" },
-    { title: "JD FRESH Metal Foldable Wall Mount Rack", stars: "3.6", rating: "83", price: "399.00", oldPrice: "999", off: "60% off" }
-  ];
-
-  const fixedStorageProducts = realDetailsMock.map((mockCard, idx) => {
-    const dbRow = storageItems[idx % (storageItems.length || 1)];
-    const imageTarget = dbRow ? dbRow.image_url : "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace";
-
-    return {
-      id: dbRow ? dbRow.id : `mock-storage-${idx}`,
-      image_url: imageTarget, 
-      title: mockCard.title,
-      stars: mockCard.stars,
-      ratingCount: mockCard.rating,
-      price: mockCard.price,
-      oldPrice: mockCard.oldPrice,
-      discount: mockCard.off
-    };
-  });
-
-  const subCategoryArchItems = [
-    { title: "Storage boxes", img: storageItems[2]?.image_url || "https://m.media-amazon.com/images/I/618z+9a-M0L._AC_SX250_.jpg" },
-    { title: "Home organizers", img: storageItems[4]?.image_url || "https://m.media-amazon.com/images/I/413F0jhPwNL._AC_SX250_.jpg" },
-    { title: "Laundry hampers", img: storageItems[0]?.image_url || "https://m.media-amazon.com/images/I/41lgEICZpOL._AC_SX250_.jpg" },
-    { title: "Waste & recycling", img: storageItems[1]?.image_url || "https://m.media-amazon.com/images/I/51TzVOdYPJL._AC_SX250_.jpg" },
-    { title: "Collapsible wardrobe", img: storageItems[3]?.image_url || "https://m.media-amazon.com/images/I/41X5OvQTN6L._AC_SX250_.jpg" },
-    { title: "Drying racks", img: storageItems[2]?.image_url || "https://m.media-amazon.com/images/I/618z+9a-M0L._AC_SX250_.jpg" },
-    { title: "Shoe racks", img: storageItems[4]?.image_url || "https://m.media-amazon.com/images/I/413F0jhPwNL._AC_SX250_.jpg" },
-    { title: "Bathroom organizers", img: storageItems[1]?.image_url || "https://m.media-amazon.com/images/I/51TzVOdYPJL._AC_SX250_.jpg" }
-  ];
-
-  return (
+const returnedBlock = `  return (
     <div className="flex-grow max-w-[1500px] w-full mx-auto flex gap-8 select-none text-left">
       
       {/* 1. LEFT SIDEBAR COLUMN */}
@@ -194,45 +74,6 @@ function SearchResultsContent() {
                 <input type="checkbox" className="rounded-sm border-gray-300 w-3.5 h-3.5" />
                 <span className="text-gray-900 text-xs">Get It by Tomorrow</span>
               </label>
-            </div>
-          </div>
-        ) : isLightingCategory ? (
-          <div className="space-y-5 text-[13px]">
-            <div>
-              <h3 className="font-bold text-gray-900 mb-1 text-sm">Category</h3>
-              <ul className="space-y-1 text-gray-800">
-                <li className="font-medium cursor-pointer hover:text-orange-600">&lsaquo; Home & Kitchen</li>
-                <li className="font-semibold pl-2 text-gray-900">Indoor Lighting</li>
-                <ul className="pl-4 space-y-1 text-gray-600 text-xs">
-                  <li className="hover:text-orange-600 cursor-pointer text-orange-600 font-bold">Ceiling Lighting</li>
-                  <li className="hover:text-orange-600 cursor-pointer">Ceiling-mounted lights</li>
-                  <li className="hover:text-orange-600 cursor-pointer">Clip Lights</li>
-                  <li className="hover:text-orange-600 cursor-pointer">Desk Lights</li>
-                  <li className="hover:text-orange-600 cursor-pointer">Fixtures</li>
-                </ul>
-              </ul>
-            </div>
-            <hr className="border-gray-200" />
-            <div>
-              <h3 className="font-bold text-gray-900 mb-1.5 text-sm">Brands</h3>
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 cursor-pointer font-medium text-gray-700">
-                  <input type="checkbox" className="rounded-sm border-gray-300 w-3.5 h-3.5" />
-                  <span className="text-gray-900 text-xs">PHILIPS</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer font-medium text-gray-700">
-                  <input type="checkbox" className="rounded-sm border-gray-300 w-3.5 h-3.5" />
-                  <span className="text-gray-900 text-xs">Halonix</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer font-medium text-gray-700">
-                  <input type="checkbox" className="rounded-sm border-gray-300 w-3.5 h-3.5" />
-                  <span className="text-gray-900 text-xs">Bajaj</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer font-medium text-gray-700">
-                  <input type="checkbox" className="rounded-sm border-gray-300 w-3.5 h-3.5" />
-                  <span className="text-gray-900 text-xs">Crompton</span>
-                </label>
-              </div>
             </div>
           </div>
         ) : isDecorCategory ? (
@@ -317,7 +158,7 @@ function SearchResultsContent() {
               <button onClick={() => scrollSlider(productSliderRef, 'left')} className="absolute left-1.5 top-[56%] -translate-y-1/2 z-40 bg-white/95 hover:bg-white border border-gray-300 text-gray-800 w-10 h-14 flex items-center justify-center shadow-lg text-2xl font-light rounded-md">&#8249;</button>
 
               <div ref={productSliderRef} className="flex overflow-x-auto gap-4 pb-3 scrollbar-none scroll-smooth items-stretch" style={{ scrollbarWidth: 'none' }}>
-                {fixedStorageProducts.map((item: any) => (
+                {fixedStorageProducts.map((item) => (
                   <div key={item.id} className="flex-shrink-0 w-[215px] bg-white rounded-md flex flex-col p-3 shadow-md text-left justify-between select-none border border-transparent hover:border-stone-300 transition-all">
                     
                     <div className="h-44 w-full flex items-center justify-center overflow-hidden bg-white mb-3 p-1 rounded-sm">
@@ -373,13 +214,13 @@ function SearchResultsContent() {
             <div className="bg-[#F7F7F7] p-5 border border-gray-200 rounded-none w-full mb-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4 tracking-tight">Trends of the season</h2>
               <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
-                {products.slice(0, 6).map((item: any) => (
+                {furnishingTrends.map((item) => (
                   <div key={item.id} className="flex-shrink-0 w-[180px] flex flex-col bg-white border border-transparent hover:shadow-lg transition-shadow overflow-hidden p-2 group">
                     <div className="w-full h-[180px] flex items-center justify-center overflow-hidden">
                       <img src={item.image_url} alt={item.title} className="max-h-full max-w-full object-cover" />
                     </div>
                     <div className="text-center mt-3 mb-1">
-                      <a href={`/product/${item.id}`} className="text-sm font-medium text-[#007185] hover:text-orange-600 hover:underline">Shop now</a>
+                      <a href="#" className="text-sm font-medium text-[#007185] hover:text-orange-600 hover:underline">{item.link_text || 'Shop now'}</a>
                     </div>
                   </div>
                 ))}
@@ -389,7 +230,7 @@ function SearchResultsContent() {
             <div className="bg-[#F7F7F7] p-5 border border-gray-200 rounded-none w-full mb-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4 tracking-tight">Best of furnishing brands</h2>
               <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
-                {furnishingBrands.map((brand: any) => (
+                {furnishingBrands.map((brand) => (
                   <div key={brand.id} className="flex-shrink-0 w-[180px] flex flex-col bg-white border border-transparent hover:shadow-lg transition-shadow overflow-hidden p-2 group">
                     <div className="w-full h-[180px] flex items-center justify-center overflow-hidden">
                       <img src={brand.image_url} alt={brand.name} className="max-h-full max-w-full object-contain" />
@@ -402,78 +243,15 @@ function SearchResultsContent() {
               </div>
             </div>
           </div>
-        ) : isLightingCategory ? (
-          <div className="w-full">
-            <div className="w-full bg-black h-[280px] rounded-none mb-6 flex justify-between items-center relative overflow-hidden border border-gray-800">
-              <div className="flex flex-col items-center justify-center space-y-6 z-10 w-[55%]">
-                <h1 className="text-5xl font-bold text-white tracking-wide font-sans text-center">Ceiling light<br/>store</h1>
-                <p className="text-[22px] text-[#E3A8D2] font-medium text-center tracking-wide">Excellence in overhead lighting</p>
-              </div>
-              <div className="absolute right-0 top-0 h-full w-[45%] flex justify-end">
-                 <img src="https://images.unsplash.com/photo-1565814636199-ae8133055c1c?w=600&q=80" alt="Kitchen Lighting" className="h-full w-full object-cover" />
-              </div>
-              <div className="absolute bottom-0 w-full h-[52px] bg-black/85 flex items-center pl-8">
-                 <p className="text-white text-[22px] font-bold">Surface Lights and Battens. Installation available for False Ceilings</p>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-none w-full mb-6 relative group/carousel1">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Light up your space</h2>
-              <button onClick={() => scrollSlider(lightingSliderRef, 'left')} className="absolute left-0 top-[60%] -translate-y-1/2 z-40 bg-white/95 hover:bg-white border border-gray-300 text-gray-800 w-10 h-[100px] flex items-center justify-center shadow-md text-2xl font-light rounded-r-md">&#8249;</button>
-              <div ref={lightingSliderRef} className="flex overflow-x-auto gap-4 pb-2 scrollbar-none scroll-smooth" style={{ scrollbarWidth: 'none' }}>
-                {lightingBrands.map((item: any, idx: number) => {
-                  const prices = [
-                    { old: 349, new: 89, off: "74%" },
-                    { old: 199, new: 57, off: "71%" },
-                    { old: 685, new: 225, off: "67%" },
-                    { old: 155, new: 55, off: "65%" },
-                    { old: 550, new: 205, off: "63%" },
-                    { old: 700, new: 189, off: "73%" }
-                  ];
-                  const ratings = [2157, 12437, 8611, 4841, 1877, 10785];
-                  const p = prices[idx % prices.length];
-                  const r = ratings[idx % ratings.length];
-
-                  return (
-                  <div key={item.id} className="flex-shrink-0 w-[200px] flex flex-col border border-gray-200 hover:shadow-lg transition-shadow bg-white rounded-sm pb-3">
-                    <div className="w-full h-[200px] flex items-center justify-center overflow-hidden mb-2 bg-[#F7F7F7]">
-                      <img src={item.image_url} alt={item.title} className="max-h-[90%] max-w-[90%] object-contain mix-blend-multiply" />
-                    </div>
-                    <div className="text-center px-2">
-                      <p className="text-sm font-bold text-gray-900 mb-1">{item.title}</p>
-                      <div className="flex items-center justify-center mb-1">
-                        <span className="text-[#DE7921] text-sm">★★★★☆</span>
-                        <span className="text-xs text-[#007185] ml-1">{r.toLocaleString()}</span>
-                      </div>
-                      <div className="flex items-baseline justify-center gap-1 mb-1">
-                        <span className="text-lg font-bold text-[#B12704]">₹{p.new}</span>
-                        <span className="text-xs text-gray-500 line-through">₹{p.old}</span>
-                        <span className="text-xs text-gray-500">({p.off} off)</span>
-                      </div>
-                      <div className="bg-[#CC0C39] text-white text-[11px] font-bold px-2 py-0.5 rounded-sm w-max mx-auto mb-1">Limited time deal</div>
-                      <div className="text-[11px] mt-1 text-gray-700">
-                        <span className="bg-[#71B214] text-white px-1.5 py-0.5 rounded-sm mr-1">Savings</span>Buy 2 items, get 2% off
-                      </div>
-                    </div>
-                  </div>
-                )})}
-              </div>
-              <button onClick={() => scrollSlider(lightingSliderRef, 'right')} className="absolute right-0 top-[60%] -translate-y-1/2 z-40 bg-white/95 hover:bg-white border border-gray-300 text-gray-800 w-10 h-[100px] flex items-center justify-center shadow-md text-2xl font-light rounded-l-md">&#8250;</button>
-            </div>
-          </div>
         ) : isDecorCategory ? (
           <div className="w-full">
-            <div className="w-full bg-[#FFF0E9] h-[280px] rounded-none mb-6 pl-12 flex justify-between items-center relative overflow-hidden">
-              <div className="flex flex-col space-y-3 z-10 w-1/2">
-                <h1 className="text-[52px] font-light text-[#8A6352] tracking-wide font-sans mb-1">Home Décor</h1>
-                <p className="text-[22px] text-gray-900 font-medium pt-1">Get trendy home décor products today!</p>
-                <button className="bg-black text-white text-sm font-bold px-6 py-2.5 rounded-full w-[140px] mt-6 hover:bg-gray-800 transition-colors">Shop now &nbsp;&#9656;</button>
+            <div className="w-full bg-[#FCE3D4] h-64 rounded-none mb-6 p-10 flex justify-between items-center relative overflow-hidden border border-orange-100">
+              <div className="flex flex-col space-y-2 z-10">
+                <h1 className="text-5xl font-light text-gray-800 tracking-wide font-serif">Home Décor</h1>
+                <p className="text-lg text-gray-700 font-medium pt-1">Get trendy home décor products today!</p>
+                <button className="bg-black text-white text-xs font-bold px-5 py-2 rounded-full w-28 mt-4">Shop now</button>
               </div>
-              <div className="absolute right-0 top-0 h-full w-[45%] flex justify-end">
-                <div className="h-full w-full relative bg-[#E6D4CB] rounded-tl-[100px] overflow-hidden flex items-center justify-center p-6">
-                   <div className="absolute left-10 bottom-12 bg-[#1A1A1A] text-white font-mono text-3xl px-6 py-3 rounded-xl border-t-2 border-gray-600 shadow-2xl font-bold tracking-widest">09:20</div>
-                </div>
-              </div>
+              <div className="w-44 h-44 rounded-full bg-stone-800 flex flex-col items-center justify-center text-amber-500 absolute right-12 text-xl font-bold font-mono shadow-md">09:20</div>
             </div>
 
             {/* Category Slider: Large Square Boxes */}
@@ -481,7 +259,7 @@ function SearchResultsContent() {
               <h2 className="text-lg font-bold text-gray-900 mb-4">Shop by category</h2>
               <button onClick={() => scrollSlider(decorSliderRef, 'left')} className="absolute left-0 top-[45%] -translate-y-1/2 z-40 bg-white/95 hover:bg-white border border-gray-300 text-gray-800 w-10 h-[100px] flex items-center justify-center shadow-md text-2xl font-light rounded-r-md">&#8249;</button>
               <div ref={decorSliderRef} className="flex overflow-x-auto gap-5 pb-2 scrollbar-none scroll-smooth" style={{ scrollbarWidth: 'none' }}>
-                {decorCategories.map((item: any) => (
+                {decorCategories.map((item) => (
                   <div key={item.id} onClick={() => handleCategoryChange(item.title)} className="flex-shrink-0 w-[260px] flex flex-col cursor-pointer group">
                     <div className="w-full h-[260px] bg-[#F7F7F7] border border-gray-200 p-4 flex items-center justify-center relative overflow-hidden bg-gradient-to-b from-white to-orange-50/20">
                       <img src={item.image_url} alt={item.title} className="max-h-full max-w-full object-contain mix-blend-multiply" />
@@ -498,7 +276,7 @@ function SearchResultsContent() {
             <div className="flex-grow">
               <h1 className="text-xl font-bold text-gray-900 mb-1">Results</h1>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {products.map((item: any) => (
+                {products.map((item) => (
                   <SearchProductCard key={item.id} id={item.id} title={item.title} image_url={item.image_url} price={item.price ? Number(item.price) : 0} />
                 ))}
               </div>
@@ -515,7 +293,7 @@ function SearchResultsContent() {
                   </button>
                   <hr className="border-gray-200 mb-4" />
                   <div className="space-y-4 max-h-[60vh] overflow-y-auto scrollbar-thin text-left pr-2">
-                    {cartItems.map((item: any) => (
+                    {cartItems.map((item) => (
                       <div key={item.id} className="flex gap-3">
                         <div className="w-16 h-16 shrink-0 flex items-center justify-center p-1 bg-white border border-gray-100 rounded">
                           <img src={item.image_url} alt={item.title} className="max-h-full max-w-full object-contain" />
@@ -539,18 +317,7 @@ function SearchResultsContent() {
 
     </div>
   );
-}
+`;
 
-export default function SearchPage() {
-  return (
-    <div className="bg-white min-h-screen text-black font-sans flex flex-col justify-between">
-      <Header />
-      <div className="flex-grow max-w-[1500px] w-full mx-auto px-4 py-4 flex flex-col justify-between" suppressHydrationWarning>
-        <Suspense fallback={<div className="w-full p-6 text-left"><p className="text-gray-600 animate-pulse">Loading search results...</p></div>}>
-          <SearchResultsContent />
-        </Suspense>
-      </div>
-      <Footer />
-    </div>
-  );
-}
+fs.writeFileSync(filePath, topPart + returnedBlock + bottomPart);
+console.log("Rewrite completed successfully!");
