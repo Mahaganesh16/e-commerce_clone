@@ -14,8 +14,24 @@ export async function GET(request: NextRequest) {
     if (category) {
       const cleanCategory = category.toLowerCase().trim();
 
+      // 0. CHECK IF IT MATCHES A DEDICATED CATEGORY IN category_images
+      const [catResults]: any = await db.query(
+        `SELECT id, name FROM categories WHERE LOWER(name) = ? OR LOWER(slug) = ?`,
+        [cleanCategory, cleanCategory]
+      );
+
+      if (catResults.length > 0) {
+        const catId = catResults[0].id;
+        const [imgResults]: any = await db.query(
+          `SELECT id, title, image_url, price, category_id as section_id 
+           FROM category_images 
+           WHERE category_id = ?`,
+          [catId]
+        );
+        rows = imgResults;
+      }
       // 1. STRICT WASHING MACHINE ROUTE
-      if (cleanCategory.includes('washing') || cleanCategory.includes('washer')) {
+      else if (cleanCategory.includes('washing') || cleanCategory.includes('washer')) {
         const [results]: any = await db.query(
           `SELECT id, title, image_url, price, section_id 
            FROM section_items 
@@ -46,19 +62,24 @@ export async function GET(request: NextRequest) {
         );
         rows = results;
       }
-      // 4. GENERAL FALLBACK ROUTE (For Microwaves, Cosmetics, Fashion, etc.)
+      // 4. GENERAL FALLBACK ROUTE
       else {
+        // Fallback to searching section_items and category_images
         const [results]: any = await db.query(
-          `SELECT id, title, image_url, price, section_id 
-           FROM section_items 
-           WHERE LOWER(title) LIKE ?`,
-          [`%${cleanCategory}%`]
+          `SELECT id, title, image_url, price, section_id FROM section_items WHERE LOWER(title) LIKE ?
+           UNION
+           SELECT id, title, image_url, price, category_id as section_id FROM category_images WHERE LOWER(title) LIKE ?`,
+          [`%${cleanCategory}%`, `%${cleanCategory}%`]
         );
         rows = results;
       }
     } else {
-      // Load all items if no category search parameter is passed
-      const [results]: any = await db.query("SELECT id, title, image_url, price, section_id FROM section_items");
+      // Load all items if no category search parameter is passed (for homepage layout)
+      const [results]: any = await db.query(
+        `SELECT id, title, image_url, price, section_id FROM section_items
+         UNION
+         SELECT id, title, image_url, price, category_id as section_id FROM category_images`
+      );
       rows = results;
     }
 
