@@ -249,23 +249,16 @@ export default function Header() {
           All
         </div>
 
-        <p className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">MX Player</p>
         <p className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">Sell</p>
-        <p className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">Bestsellers</p>
-        <p className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer text-[#febd69]">Today's Deals</p>
-        <p className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">Mobiles</p>
-        <p className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer flex items-center gap-0.5">
-          Prime <span className="text-gray-400 text-[8px] mt-1">▼</span>
-        </p>
-        <p className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">New Releases</p>
-        <p className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">Customer Service</p>
-        <p className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">Electronics</p>
-        <p className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">Amazon Pay</p>
-        <p className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">Fashion</p>
-        <p className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">Home & Kitchen</p>
-        <p className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">Computers</p>
-        <p className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">Toys & Games</p>
-        <p className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">Car & Motorbike</p>
+        <p onClick={() => window.location.href = '/search?category=bestsellers'} className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">Bestsellers</p>
+        <p onClick={() => window.location.href = '/search?category=todays%20deals'} className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer text-[#febd69]">Today's Deals</p>
+        <p onClick={() => window.location.href = '/search?category=mobiles'} className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">Mobiles</p>
+        <p onClick={() => window.location.href = '/search?category=electronics'} className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">Electronics</p>
+        <p onClick={() => window.location.href = '/search?category=fashion'} className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">Fashion</p>
+        <p onClick={() => window.location.href = '/search?category=home%20%26%20kitchen'} className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">Home & Kitchen</p>
+        <p onClick={() => window.location.href = '/search?category=computers'} className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">Computers</p>
+        <p onClick={() => window.location.href = '/search?category=toys%20%26%20games'} className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">Toys & Games</p>
+        <p onClick={() => window.location.href = '/search?category=car%20%26%20motorbike'} className="border border-transparent hover:border-white p-1 pl-1.5 pr-1.5 cursor-pointer">Car & Motorbike</p>
       </div>
 
       {/* Sidebar Menu Component */}

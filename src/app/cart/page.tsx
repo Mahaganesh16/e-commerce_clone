@@ -193,7 +193,14 @@ export default function CartPage() {
                 <span>This order contains a gift</span>
               </div>
 
-              <button className="w-full bg-[#FFD814] border border-[#FCD200] hover:bg-[#F7CA00] py-1.5 rounded-full text-sm font-medium shadow-sm transition-colors mb-3 cursor-pointer">
+              <button 
+                onClick={() => {
+                  const combinedTitle = cartItems.map(item => item.title).join(', ');
+                  const finalTitle = combinedTitle.length > 250 ? combinedTitle.substring(0, 247) + '...' : combinedTitle;
+                  router.push(`/checkout?productId=0&title=${encodeURIComponent(finalTitle)}&amount=${subtotal}`);
+                }}
+                className="w-full bg-[#FFD814] border border-[#FCD200] hover:bg-[#F7CA00] py-1.5 rounded-full text-sm font-medium shadow-sm transition-colors mb-3 cursor-pointer"
+              >
                 Proceed to Buy
               </button>
 
