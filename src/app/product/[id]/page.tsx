@@ -85,10 +85,20 @@ export default function ProductPage({ params }: Props) {
   const handleAddToCart = async () => {
     if (!product) return;
     try {
+      const storedUser = localStorage.getItem('amazon_user');
+      let email = 'anonymous';
+      if (storedUser) {
+        try {
+          const parsed = JSON.parse(storedUser);
+          if (parsed.email) email = parsed.email;
+        } catch (e) {}
+      }
+      
       await axios.post('/api/cart', {
         title: product.title,
         image_url: product.image_url,
-        price: product.price
+        price: product.price,
+        email
       });
 
       setAddedToCart(true);
@@ -204,7 +214,7 @@ export default function ProductPage({ params }: Props) {
                 >
                   {addedToCart ? '✓ Added!' : 'Add to Cart'}
                 </button>
-                <button onClick={() => router.push(`/checkout?productId=${id}&title=${encodeURIComponent(product.title)}&amount=${currentPrice}`)} className="flex-1 py-2 rounded-full text-sm font-bold bg-[#FF9900] text-white border border-[#e88a00] hover:bg-[#e88a00] transition-all cursor-pointer shadow-xs">
+                <button onClick={() => router.push(`/checkout?productId=${id}&title=${encodeURIComponent(product.title)}&amount=${currentPrice}&image=${encodeURIComponent(product.image_url)}`)} className="flex-1 py-2 rounded-full text-sm font-bold bg-[#FF9900] text-white border border-[#e88a00] hover:bg-[#e88a00] transition-all cursor-pointer shadow-xs">
                   Buy Now
                 </button>
               </div>
@@ -345,7 +355,7 @@ export default function ProductPage({ params }: Props) {
                   {addedToCart ? '✓ Added to Cart' : 'Add to Cart'}
                 </button>
 
-                <button onClick={() => router.push(`/checkout?productId=${id}&title=${encodeURIComponent(product.title)}&amount=${currentPrice}`)} className="w-full py-2 rounded-full text-sm font-bold bg-[#FF9900] text-white border border-[#e88a00] hover:bg-[#e88a00] transition-all cursor-pointer shadow-sm">
+                <button onClick={() => router.push(`/checkout?productId=${id}&title=${encodeURIComponent(product.title)}&amount=${currentPrice}&image=${encodeURIComponent(product.image_url)}`)} className="w-full py-2 rounded-full text-sm font-bold bg-[#FF9900] text-white border border-[#e88a00] hover:bg-[#e88a00] transition-all cursor-pointer shadow-sm">
                   Buy Now
                 </button>
 

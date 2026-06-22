@@ -13,6 +13,7 @@ function CheckoutContent() {
   const productId = searchParams.get('productId');
   const title = searchParams.get('title');
   const amount = searchParams.get('amount');
+  const image = searchParams.get('image');
 
   const [paymentMethod, setPaymentMethod] = useState('Credit/Debit Card');
   const [addressName, setAddressName] = useState('');
@@ -31,6 +32,15 @@ function CheckoutContent() {
   const handlePlaceOrder = async () => {
     setLoading(true);
     try {
+      const storedUser = localStorage.getItem('amazon_user');
+      let email = 'anonymous';
+      if (storedUser) {
+        try {
+          const parsed = JSON.parse(storedUser);
+          if (parsed.email) email = parsed.email;
+        } catch (e) {}
+      }
+
       await axios.post('/api/orders', {
         product_summary: title,
         total_amount: parseFloat(amount as string),
@@ -38,7 +48,9 @@ function CheckoutContent() {
         address_name: addressName,
         address_mobile: addressMobile,
         address_pincode: addressPincode,
-        address_full: addressFull
+        address_full: addressFull,
+        email: email,
+        product_image: image
       });
       setSuccess(true);
     } catch (err) {
@@ -59,12 +71,20 @@ function CheckoutContent() {
         <div className="text-green-500 text-6xl mb-4">✓</div>
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Payment Successful!</h2>
         <p className="text-gray-600 mb-6">Your order for "{title}" has been placed successfully.</p>
-        <button 
-          onClick={() => router.push('/')}
-          className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-full transition-all cursor-pointer"
-        >
-          Continue Shopping
-        </button>
+        <div className="flex gap-4 justify-center">
+          <button 
+            onClick={() => router.push('/')}
+            className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-full transition-all cursor-pointer"
+          >
+            Continue Shopping
+          </button>
+          <button 
+            onClick={() => router.push('/orders')}
+            className="bg-gray-100 border border-gray-300 hover:bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-full transition-all cursor-pointer"
+          >
+            Check Orders
+          </button>
+        </div>
       </div>
     );
   }
@@ -79,9 +99,14 @@ function CheckoutContent() {
           <div className="border border-gray-300 rounded p-6 shadow-sm">
             <h2 className="text-xl font-bold text-gray-800 mb-4">1. Review item and delivery</h2>
             <div className="flex justify-between items-start border-t border-gray-200 pt-4">
-              <div>
-                <h3 className="font-medium text-gray-900">{title}</h3>
-                <p className="text-sm text-gray-600 mt-1">Delivery: Standard Delivery</p>
+              <div className="flex gap-4">
+                {image && (
+                  <img src={image} alt={title || 'Product Image'} className="w-20 h-20 object-contain mix-blend-multiply" />
+                )}
+                <div>
+                  <h3 className="font-medium text-gray-900">{title}</h3>
+                  <p className="text-sm text-gray-600 mt-1">Delivery: Standard Delivery</p>
+                </div>
               </div>
               <div className="font-bold text-lg">
                 ₹{Number(amount).toLocaleString('en-IN')}

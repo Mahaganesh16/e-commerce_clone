@@ -31,11 +31,20 @@ export default function Header() {
   useEffect(() => {
     const fetchCartCount = async () => {
       try {
-        const res = await axios.get('/api/cart');
-        const count = res.data.reduce((acc: number, item: any) => acc + item.quantity, 0);
-        setCartCount(count);
+        const storedUser = localStorage.getItem('amazon_user');
+        let email = 'anonymous';
+        if (storedUser) {
+          try {
+            const parsed = JSON.parse(storedUser);
+            if (parsed.email) email = parsed.email;
+          } catch (e) {}
+        }
+        
+        const res = await axios.get(`/api/cart?email=${email}`);
+        const total = res.data.reduce((acc: number, item: any) => acc + item.quantity, 0);
+        setCartCount(total);
       } catch (err) {
-        console.error("Error fetching cart count:", err);
+        console.error('Error fetching cart count:', err);
       }
     };
     fetchCartCount();
@@ -216,10 +225,13 @@ export default function Header() {
         </div>
 
         {/* 6. Returns & Orders */}
-        <div className="flex flex-col text-xs text-white border border-transparent hover:border-white p-1 pl-2 pr-2 cursor-pointer h-[45px] justify-center leading-tight">
-          <span className="text-gray-300 font-normal">Returns</span>
-          <span className="text-sm font-bold">& Orders</span>
-        </div>
+          <div 
+            onClick={() => window.location.href = '/orders'}
+            className="flex flex-col hover:border-white border border-transparent p-2 cursor-pointer transition-all"
+          >
+            <span className="text-xs text-gray-300">Returns</span>
+            <span className="text-sm font-bold text-white">& Orders</span>
+          </div>
 
         {/* 7. Shopping Cart */}
         <div onClick={() => window.location.href = '/cart'} className="flex items-center border border-transparent hover:border-white p-1 pl-2 pr-2 cursor-pointer h-[45px] relative gap-1">

@@ -37,7 +37,7 @@ export default function RegisterPage() {
 
       if (res.ok) {
         // Automatically login the user after successful registration
-        localStorage.setItem('amazon_user', JSON.stringify({ name: data.name }));
+        localStorage.setItem('amazon_user', JSON.stringify({ name: data.name, email }));
         router.push('/');
       } else {
         setError(data.message || 'Error registering account');

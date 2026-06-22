@@ -21,7 +21,16 @@ export default function CartPage() {
 
   const fetchCartItems = async () => {
     try {
-      const res = await axios.get('/api/cart');
+      const storedUser = localStorage.getItem('amazon_user');
+      let email = 'anonymous';
+      if (storedUser) {
+        try {
+          const parsed = JSON.parse(storedUser);
+          if (parsed.email) email = parsed.email;
+        } catch (e) {}
+      }
+      
+      const res = await axios.get(`/api/cart?email=${email}`);
       setCartItems(res.data);
     } catch (err) {
       console.error('Error fetching cart items:', err);
@@ -197,7 +206,8 @@ export default function CartPage() {
                 onClick={() => {
                   const combinedTitle = cartItems.map(item => item.title).join(', ');
                   const finalTitle = combinedTitle.length > 250 ? combinedTitle.substring(0, 247) + '...' : combinedTitle;
-                  router.push(`/checkout?productId=0&title=${encodeURIComponent(finalTitle)}&amount=${subtotal}`);
+                  const finalImage = cartItems.length > 0 ? cartItems[0].image_url : '';
+                  router.push(`/checkout?productId=0&title=${encodeURIComponent(finalTitle)}&amount=${subtotal}&image=${encodeURIComponent(finalImage)}`);
                 }}
                 className="w-full bg-[#FFD814] border border-[#FCD200] hover:bg-[#F7CA00] py-1.5 rounded-full text-sm font-medium shadow-sm transition-colors mb-3 cursor-pointer"
               >

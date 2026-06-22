@@ -15,7 +15,7 @@ const pool = mysql.createPool({
 
 // Helper function to safely determine which table contains the product ID
 async function determineTableName(id: string): Promise<string> {
-  const tables = ['air_conditioners', 'refrigerators', 'microwaves', 'washing_machines', 'section_items', 'category_images'];
+  const tables = ['air_conditioners', 'refrigerators', 'microwaves', 'washing_machines', 'section_items', 'view_product_details'];
   
   for (const table of tables) {
     try {

@@ -57,7 +57,7 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok) {
-        localStorage.setItem('amazon_user', JSON.stringify({ name: data.name }));
+        localStorage.setItem('amazon_user', JSON.stringify({ name: data.name, email }));
         router.push('/');
       } else {
         setError(data.message || 'Invalid password');

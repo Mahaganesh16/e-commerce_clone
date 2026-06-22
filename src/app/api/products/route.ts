@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     if (category) {
       const cleanCategory = category.toLowerCase().trim();
 
-      // 0. CHECK IF IT MATCHES A DEDICATED CATEGORY IN category_images
+      // 0. CHECK IF IT MATCHES A DEDICATED CATEGORY IN view_product_details
       const [catResults]: any = await db.query(
         `SELECT id, name FROM categories WHERE LOWER(name) = ? OR LOWER(slug) = ?`,
         [cleanCategory, cleanCategory]
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
         const catId = catResults[0].id;
         const [imgResults]: any = await db.query(
           `SELECT id, title, image_url, price, category_id as section_id 
-           FROM category_images 
+           FROM view_product_details 
            WHERE category_id = ?`,
           [catId]
         );
@@ -64,11 +64,11 @@ export async function GET(request: NextRequest) {
       }
       // 4. GENERAL FALLBACK ROUTE
       else {
-        // Fallback to searching section_items and category_images
+        // Fallback to searching section_items and view_product_details
         const [results]: any = await db.query(
           `SELECT id, title, image_url, price, section_id FROM section_items WHERE LOWER(title) LIKE ?
            UNION
-           SELECT id, title, image_url, price, category_id as section_id FROM category_images WHERE LOWER(title) LIKE ?`,
+           SELECT id, title, image_url, price, category_id as section_id FROM view_product_details WHERE LOWER(title) LIKE ?`,
           [`%${cleanCategory}%`, `%${cleanCategory}%`]
         );
         rows = results;
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
       const [results]: any = await db.query(
         `SELECT id, title, image_url, price, section_id FROM section_items
          UNION
-         SELECT id, title, image_url, price, category_id as section_id FROM category_images`
+         SELECT id, title, image_url, price, category_id as section_id FROM view_product_details`
       );
       rows = results;
     }
