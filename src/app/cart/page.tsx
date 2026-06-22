@@ -204,6 +204,12 @@ export default function CartPage() {
 
               <button 
                 onClick={() => {
+                  const storedUser = localStorage.getItem('amazon_user');
+                  if (!storedUser) {
+                    router.push('/login');
+                    return;
+                  }
+                  
                   const combinedTitle = cartItems.map(item => item.title).join(', ');
                   const finalTitle = combinedTitle.length > 250 ? combinedTitle.substring(0, 247) + '...' : combinedTitle;
                   const finalImage = cartItems.length > 0 ? cartItems[0].image_url : '';

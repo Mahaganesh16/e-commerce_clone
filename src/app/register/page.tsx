@@ -78,7 +78,7 @@ export default function RegisterPage() {
           <div className="flex flex-col gap-1">
             <label className="text-[13px] font-bold">Mobile number or email</label>
             <input 
-              type="email"
+              type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full border border-gray-400 p-1.5 rounded text-[13px] focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 bg-white text-black h-[31px]"
