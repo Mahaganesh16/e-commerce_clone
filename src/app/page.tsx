@@ -105,7 +105,7 @@ export default function HomePage() {
               link_text: "See all offers",
               items: [
                 { title: "Soap Pack", image_url: findProductImg(['rgtfl', 'soap', 'bars'], 'https://m.media-amazon.com/images/I/718F+0RgtfL._AC_SY170_.jpg') },
-                { title: "Face Wash", image_url: findProductImg(['gel', 'wash'], 'https://images.unsplash.com/photo-1556228720-195a672e8a03') },
+                { title: "Face Wash", image_url: findProductImg(['face wash', 'cleansing gel'], 'https://images.unsplash.com/photo-1556228720-195a672e8a03') },
                 { title: "Skin Cleanser", image_url: findProductImg(['cleanser', 'moisturizing'], 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be') },
                 { title: "Facial Serums", image_url: findProductImg(['serums', 'protection'], 'https://images.unsplash.com/photo-1608248597481-496100c80836') }
               ]
@@ -116,7 +116,7 @@ export default function HomePage() {
               link_text: "Shop now",
               items: [
                 { title: "Garbage Bags", image_url: findProductImg(['erhck', 'garbage', 'disposal'], 'https://m.media-amazon.com/images/I/71erHCKJ3WL._AC_SY170_.jpg') },
-                { title: "Kitchen Scales", image_url: findProductImg(['fRr+gL', 'weight', 'scale'], 'https://m.media-amazon.com/images/I/71775fRr+gL._AC_SY170_.jpg') },
+                { title: "Kitchen Scales", image_url: findProductImg(['kitchen scale', 'food scale'], 'https://m.media-amazon.com/images/I/61dfO8Mh27L._AC_SY200_.jpg') },
                 { title: "Water Bottles", image_url: findProductImg(['insulated', 'bottle'], 'https://images.unsplash.com/photo-1602143407151-7111542de6e8') },
                 { title: "Utensils Set", image_url: findProductImg(['cioa7', 'utensils', 'silver'], 'https://m.media-amazon.com/images/I/71rCioa7fGL._AC_UL480_FMwebp_QL65_.jpg') }
               ]
